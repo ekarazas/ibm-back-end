@@ -50,6 +50,45 @@ app.post("/search", async (req, res) => {
   }
 });
 
+app.post("/articles", async (req, res) => {
+  if (
+    !req.body.title ||
+    !req.body.description ||
+    !req.body.url ||
+    !req.body.image ||
+    !req.body.publishedAt
+  ) {
+    return res.status(400).send({ error: "Incorrect data passed" });
+  }
+  try {
+    const schema = Joi.object();
+    const validateArticleInfo = schema.validate(req.body);
+    if (validateArticleInfo.error) {
+      return res.status(400).send({ error: "Passed data is invalid" });
+    }
+  } catch (err) {
+    console.log(err);
+    return res
+      .status(500)
+      .send({ error: "An unexpected error occured. Please try again later" });
+  }
+
+  try {
+    await logger.log({
+      level: "info",
+      name: "clickedArticleInfo",
+      articleInfo: `title: ${req.body.title}, description: ${req.body.description}, url: ${req.body.url}, image: ${req.body.image}, publishedAt: ${req.body.publishedAt}`,
+    });
+
+    return res.send({ status: "Article info is logged" });
+  } catch (err) {
+    console.log(err);
+    return res
+      .status(500)
+      .send({ error: "An unexpected error occured. Please try again later" });
+  }
+});
+
 app.all("*", (req, res) => {
   res.status(404).send({ error: "Page not found" });
 });
